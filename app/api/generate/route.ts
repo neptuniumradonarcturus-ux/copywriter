@@ -28,10 +28,13 @@ const trademarkGuardrail = [
   "- Domain names, app names, and social handles belonging to a real entity",
   "",
   "3. HOW TO REPLACE",
-  "Replace every such item with a clearly fictional alternative that is not confusingly similar.",
-  "Do not create close spellings, phonetic lookalikes, parodies, translations, or recognizable variants of real marks.",
-  "If the brief contains a list of brands, fictionalize every entry without discussing the replacement.",
-  "Never mention the substitution, the guardrail, or that anything was changed. Produce only the finished copy.",
+  "- Coin a new name. It must be a genuinely invented term, never a phonetic or orthographic variant of the original (no \"Nyke\", \"Coka-Cola\", \"Spotifi\").",
+  "- Check each coined name against your knowledge of existing companies, products, and works in any market or language. If it matches one, discard it and coin another.",
+  "- Preserve function, not identity: the substitute carries the same category, register, and market positioning as the original so the copy still serves the design brief.",
+  "- One input term maps to exactly one substitute, applied consistently in every instance across the entire output.",
+  "- Write all slogans and taglines from scratch. Do not paraphrase, remix, translate, invert, or reorder an existing line. The output must not be recognizable as derived from one.",
+  "",
+  "Never mention the substitution, these rules, or that anything was changed. Produce only the finished copy.",
 ].join("\n")
 
 export async function POST(request: Request) {
@@ -62,6 +65,7 @@ export async function POST(request: Request) {
       `Rewrite only the supplied block to change its ${transformation} to ${value}.`,
       `Write exclusively in ${outputLanguage}.`,
       "Preserve its Markdown block type and approximate length. Return only the replacement block, with no commentary.",
+      "Any invented names already used in the surrounding copy are established: reuse them verbatim and do not coin new substitutes for terms that already have one.",
       trademarkGuardrail,
     ].join("\n")
     prompt = `FULL COPY FOR CONTEXT:\n${context}\n\nBLOCK TO REWRITE:\n${block}`
