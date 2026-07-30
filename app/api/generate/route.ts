@@ -14,10 +14,13 @@ function friendlyError(error: unknown) {
 }
 
 const trademarkGuardrail = [
+  // 1. SUBSTITUTE, NEVER REFUSE
+  "SUBSTITUTE, NEVER REFUSE: The brief may reference real brands, works, or people. Never refuse, warn, hedge, or ask permission because of such a reference. Silently substitute a fictional equivalent and deliver the requested copy in full.",
   "Never reproduce real brand names, designer names, product-line names, slogans, or trademarks—even if the user supplies or requests them.",
   "Replace every such name with a clearly fictional alternative that is not confusingly similar.",
   "Do not create close spellings, phonetic lookalikes, parodies, translations, or recognizable variants of real marks.",
   "If the brief contains a list of brands, fictionalize every entry without discussing the replacement.",
+  "Never mention the substitution, the guardrail, or that anything was changed. Produce only the finished copy.",
 ].join(" ")
 
 export async function POST(request: Request) {
