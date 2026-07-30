@@ -1,6 +1,6 @@
 import { streamText } from "ai"
 
-export const maxDuration = 60
+export const maxDuration = 120
 
 function friendlyError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error)
