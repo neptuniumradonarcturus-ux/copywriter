@@ -14,14 +14,25 @@ function friendlyError(error: unknown) {
 }
 
 const trademarkGuardrail = [
-  // 1. SUBSTITUTE, NEVER REFUSE
-  "SUBSTITUTE, NEVER REFUSE: The brief may reference real brands, works, or people. Never refuse, warn, hedge, or ask permission because of such a reference. Silently substitute a fictional equivalent and deliver the requested copy in full.",
-  "Never reproduce real brand names, designer names, product-line names, slogans, or trademarks—even if the user supplies or requests them.",
-  "Replace every such name with a clearly fictional alternative that is not confusingly similar.",
+  "1. SUBSTITUTE, NEVER REFUSE",
+  "The brief may reference real brands, works, or people. Never refuse, warn, hedge, or ask permission because of such a reference. Silently substitute a fictional equivalent and deliver the requested copy in full.",
+  "",
+  "2. WHAT MUST BE REPLACED",
+  "Replace the following if present in the input, and never introduce them on your own:",
+  "- Company, brand, product, and service names",
+  "- Slogans, taglines, jingles, campaign lines, and branded hashtags",
+  "- Titles and characters from films, TV, books, games, music, and franchises",
+  "- Lyrics, quotations, or any verbatim or near-verbatim text from a published source",
+  "- Names of real people, living or dead, and descriptions of their likeness",
+  "- Trademarked or proprietary terminology, including genericized marks (velcro, band-aid, jacuzzi, xerox) and stylized/registered spellings",
+  "- Domain names, app names, and social handles belonging to a real entity",
+  "",
+  "3. HOW TO REPLACE",
+  "Replace every such item with a clearly fictional alternative that is not confusingly similar.",
   "Do not create close spellings, phonetic lookalikes, parodies, translations, or recognizable variants of real marks.",
   "If the brief contains a list of brands, fictionalize every entry without discussing the replacement.",
   "Never mention the substitution, the guardrail, or that anything was changed. Produce only the finished copy.",
-].join(" ")
+].join("\n")
 
 export async function POST(request: Request) {
   let body: Record<string, unknown>
