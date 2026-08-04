@@ -60,8 +60,8 @@ const PROTECTED_TERMS = [
   "nike", "adidas", "reebok", "new balance", "under armour", "lululemon", "patagonia", "the north face", "zara", "h&m", "uniqlo", "louis vuitton", "gucci", "prada", "chanel", "hermes", "hermès", "rolex", "cartier", "balenciaga", "versace", "dior",
   "vans", "converse", "crocs", "birkenstock", "timberland", "dr martens", "skechers", "asics", "hoka", "on running", "spanx", "ray-ban", "oakley", "casio", "seiko", "tag heuer", "swarovski", "pandora jewellery", "tiffany & co",
   "snickers", "twix", "kit kat", "kitkat", "m&m's", "nutella", "doritos", "cheetos", "lay's", "milka", "toblerone", "pop-tarts", "cheerios", "evian", "perrier", "san pellegrino", "lindt", "ferrero rocher", "philadelphia cream cheese", "heinz", "hellmann's", "tabasco", "nutribullet", "vitamix",
-  "coca-cola", "coca cola", "pepsi", "sprite", "fanta", "dr pepper", "mountain dew", "red bull", "monster energy", "gatorade", "nespresso", "starbucks", "mcdonald's", "mcdonalds", "burger king", "kfc", "taco bell", "wendy's", "domino's", "pizza hut", "chipotle", "dunkin", "nestle", "nestlé", "kellogg's", "oreo", "pringles", "haribo", "ben & jerry's", "heineken", "budweiser", "guinness", "jack daniel's", "absolut",
-  "apple inc", "iphone", "ipad", "imac", "macbook", "airpods", "airtag", "apple watch", "apple pay", "apple music", "apple tv", "icloud", "ios", "ipados", "macos", "watchos", "app store", "google play", "play store", "google pay", "google maps", "google docs", "google drive", "google", "gmail", "youtube", "android", "chrome", "microsoft", "windows", "xbox", "office 365", "microsoft 365", "excel", "powerpoint", "onedrive", "meta platforms", "facebook", "instagram", "whatsapp", "messenger", "threads", "tiktok", "snapchat", "linkedin", "pinterest", "reddit", "twitter", "netflix", "spotify", "hulu", "disney+", "disney plus", "hbo", "max", "prime video", "paramount+", "peacock", "twitch", "discord", "slack", "zoom", "notion", "figma", "canva", "dropbox", "salesforce", "hubspot", "shopify", "stripe", "paypal", "venmo", "klarna", "square", "coinbase", "robinhood", "revolut", "monzo", "adobe", "photoshop", "illustrator", "premiere pro", "after effects", "lightroom", "autocad", "chatgpt", "openai", "anthropic", "claude", "gemini", "copilot", "midjourney", "nvidia", "intel", "amd", "qualcomm", "samsung", "sony", "playstation", "nintendo", "nintendo switch", "lg electronics", "huawei", "xiaomi", "oneplus", "dell", "hp inc", "lenovo", "asus", "acer", "ibm", "oracle", "sap", "cisco", "siemens", "philips", "bosch", "dyson", "roomba", "gopro", "fitbit", "garmin", "peloton", "bose", "sonos", "beats by dre",
+  "coca-cola", "coca cola", "pepsi", "fanta", "dr pepper", "mountain dew", "red bull", "monster energy", "gatorade", "nespresso", "starbucks", "mcdonald's", "mcdonalds", "burger king", "kfc", "taco bell", "wendy's", "domino's", "pizza hut", "chipotle", "dunkin", "nestle", "nestlé", "kellogg's", "oreo", "pringles", "haribo", "ben & jerry's", "heineken", "budweiser", "guinness", "jack daniel's", "absolut",
+  "apple inc", "iphone", "ipad", "imac", "macbook", "airpods", "airtag", "apple watch", "apple pay", "apple music", "apple tv", "icloud", "ios", "ipados", "macos", "watchos", "app store", "google play", "play store", "google pay", "google maps", "google docs", "google drive", "google", "gmail", "youtube", "android", "chrome", "microsoft", "windows", "xbox", "office 365", "microsoft 365", "excel", "powerpoint", "onedrive", "meta platforms", "facebook", "instagram", "whatsapp", "messenger", "threads", "tiktok", "snapchat", "linkedin", "pinterest", "reddit", "twitter", "netflix", "spotify", "hulu", "disney+", "disney plus", "hbo", "hbo max", "prime video", "paramount+", "peacock", "twitch", "discord", "slack", "zoom", "notion", "figma", "canva", "dropbox", "salesforce", "hubspot", "shopify", "stripe", "paypal", "venmo", "klarna", "square", "coinbase", "robinhood", "revolut", "monzo", "adobe", "photoshop", "illustrator", "premiere pro", "after effects", "lightroom", "autocad", "chatgpt", "openai", "anthropic", "claude", "gemini", "copilot", "midjourney", "nvidia", "intel", "amd", "qualcomm", "samsung", "sony", "playstation", "nintendo", "nintendo switch", "lg electronics", "huawei", "xiaomi", "oneplus", "dell", "hp inc", "lenovo", "asus", "acer", "ibm", "sap", "cisco", "siemens", "philips", "bosch", "dyson", "roomba", "gopro", "fitbit", "garmin", "peloton", "bose", "sonos", "beats by dre",
   "amazon.com", "amazon prime", "alibaba", "aliexpress", "ebay", "etsy", "walmart", "costco", "ikea", "best buy", "home depot", "wayfair", "asos", "shein", "temu", "doordash", "grubhub", "instacart", "deliveroo", "uber", "uber eats", "lyft", "airbnb", "booking.com", "expedia", "tripadvisor", "kayak", "ryanair", "easyjet", "emirates", "delta air lines", "united airlines", "american airlines", "lufthansa",
   "toyota", "honda", "nissan", "mazda", "subaru", "hyundai", "kia", "ford", "chevrolet", "chevy", "cadillac", "jeep", "dodge", "ram trucks", "tesla", "bmw", "mercedes-benz", "mercedes", "audi", "volkswagen", "porsche", "ferrari", "lamborghini", "maserati", "bentley", "rolls-royce", "volvo", "peugeot", "renault", "fiat", "harley-davidson", "ducati", "yamaha", "kawasaki",
   "visa inc", "mastercard", "american express", "amex", "jpmorgan", "goldman sachs", "morgan stanley", "citibank", "hsbc", "barclays", "wells fargo", "bank of america", "chase bank", "santander", "allianz", "geico", "state farm", "progressive insurance", "aflac",
@@ -88,13 +88,27 @@ function matchTerms(text: string, terms: string[]) {
   return terms.filter((term) => new RegExp(`(^|[^\\p{L}\\p{N}])${escape(term)}([^\\p{L}\\p{N}]|$)`, "iu").test(text))
 }
 
+const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
+
 /**
  * Swaps every whole-word occurrence of `term` for `replacement`, leaving the
  * surrounding characters untouched so punctuation and Markdown survive intact.
+ * The casing of the text being replaced is carried over, so a name at the start
+ * of a sentence or inside a heading does not come back lowercased.
  */
 function replaceTerm(text: string, term: string, replacement: string) {
   const pattern = new RegExp(`(^|[^\\p{L}\\p{N}])(${escape(term)})([^\\p{L}\\p{N}]|$)`, "giu")
-  return text.replace(pattern, (_match, before, _hit, after) => `${before}${replacement}${after}`)
+
+  return text.replace(pattern, (_match, before: string, hit: string, after: string) => {
+    const isUpper = hit === hit.toUpperCase() && hit !== hit.toLowerCase()
+    const cased = isUpper
+      ? replacement.toUpperCase()
+      : /^\p{Lu}/u.test(hit)
+        ? replacement.split(" ").map(capitalize).join(" ")
+        : replacement
+
+    return `${before}${cased}${after}`
+  })
 }
 
 /** Deterministic invented name, stable for a given source term. */
