@@ -2,8 +2,10 @@
 
 import type React from "react"
 import { useRef, useState } from "react"
-import { Check, Copy, Languages, Loader2, RotateCcw, Sparkles, WandSparkles } from "lucide-react"
+import { Check, Copy, Languages, Loader2, RotateCcw, ShieldCheck, Sparkles, WandSparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import type { ClearanceReport } from "@/lib/clearance"
+import { ClearancePanel } from "./clearance-panel"
 import { CopyOutput, splitMarkdownBlocks } from "./copy-output"
 import { LanguagePicker } from "./language-picker"
 
@@ -11,12 +13,29 @@ const TONES = ["Auto", "Playful", "Bold", "Warm", "Professional", "Luxurious", "
 const EDIT_TONES = ["Professional", "Conversational", "Bold", "Luxurious", "Witty"]
 const EMOTIONS = ["Excited", "Reassuring", "Curious", "Empathetic", "Urgent"]
 
+function mergeClearance(previous: ClearanceReport | null, next: ClearanceReport | null): ClearanceReport | null {
+  if (!next) return previous
+  if (!previous) return next
+  const substitutions = [...previous.substitutions]
+  for (const item of next.substitutions) {
+    if (!substitutions.some((existing) => existing.original.toLowerCase() === item.original.toLowerCase())) {
+      substitutions.push(item)
+    }
+  }
+  return {
+    passes: previous.passes + next.passes,
+    status: previous.status === "enforced" || next.status === "enforced" ? "enforced" : "clear",
+    substitutions,
+  }
+}
+
 export function Copywriter() {
   const [brief, setBrief] = useState("")
   const [wordCount, setWordCount] = useState(300)
   const [tone, setTone] = useState<(typeof TONES)[number]>("Auto")
   const [outputLanguage, setOutputLanguage] = useState("English")
   const [output, setOutput] = useState("")
+  const [clearance, setClearance] = useState<ClearanceReport | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isTransforming, setIsTransforming] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
@@ -24,17 +43,19 @@ export function Copywriter() {
   const [copied, setCopied] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
 
-  async function readStream(response: Response) {
-    if (!response.ok || !response.body) throw new Error((await response.text()) || "Something went wrong. Please try again.")
-    const reader = response.body.getReader()
-    const decoder = new TextDecoder()
-    let text = ""
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      text += decoder.decode(value, { stream: true })
+  async function readResponse(response: Response) {
+    const text = await response.text()
+    if (!response.ok) throw new Error(text || "Something went wrong. Please try again.")
+    let clearance: ClearanceReport | null = null
+    const header = response.headers.get("X-Clearance")
+    if (header) {
+      try {
+        clearance = JSON.parse(decodeURIComponent(header)) as ClearanceReport
+      } catch {
+        clearance = null
+      }
     }
-    return text
+    return { text, clearance }
   }
 
   async function handleGenerate(event?: React.FormEvent) {
@@ -43,6 +64,7 @@ export function Copywriter() {
     setIsLoading(true)
     setError(null)
     setOutput("")
+    setClearance(null)
     setSelectedIndex(null)
     setCopied(false)
     const controller = new AbortController()
@@ -54,7 +76,9 @@ export function Copywriter() {
         body: JSON.stringify({ brief, wordCount, outputLanguage, tone: tone === "Auto" ? undefined : tone }),
         signal: controller.signal,
       })
-      setOutput(await readStream(response))
+      const result = await readResponse(response)
+      setOutput(result.text)
+      setClearance(result.clearance)
     } catch (caught) {
       if ((caught as Error).name !== "AbortError") setError((caught as Error).message)
     } finally {
@@ -76,11 +100,13 @@ export function Copywriter() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mode: "transform", block, context: output, transformation, value, outputLanguage: transformation === "language" ? value : outputLanguage }),
       })
-      const replacement = (await readStream(response)).trim()
+      const result = await readResponse(response)
+      const replacement = result.text.trim()
       if (replacement) {
         blocks[selectedIndex] = replacement
         setOutput(blocks.join("\n\n"))
         if (transformation === "language") setOutputLanguage(value)
+        setClearance((previous) => mergeClearance(previous, result.clearance))
       }
     } catch (caught) {
       setError((caught as Error).message)
@@ -117,7 +143,13 @@ export function Copywriter() {
             rows={7}
             className="w-full resize-none rounded-xl border border-input bg-background px-4 py-3 text-sm leading-relaxed text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
           />
-          <p className="text-xs leading-relaxed text-muted-foreground">Real brand and trademark names are automatically replaced with fictional alternatives.</p>
+          <p className="flex items-start gap-1.5 text-xs leading-relaxed text-muted-foreground">
+            <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden="true" />
+            <span>
+              Every draft passes a mandatory clearance review. Trademarks, brand and product names, slogans, titles, and real
+              people are replaced with invented alternatives checked against existing businesses — no exceptions.
+            </span>
+          </p>
         </div>
 
         <div className="flex flex-col gap-2">
@@ -157,6 +189,8 @@ export function Copywriter() {
           </div>
         </div>
 
+        {output && clearance && <ClearancePanel report={clearance} />}
+
         {output && selectedIndex !== null && (
           <div className="flex flex-col gap-3 border-b border-border bg-muted/50 px-5 py-4 sm:px-6">
             <div className="flex items-center gap-2"><WandSparkles className="size-4 text-primary" /><p className="text-xs font-semibold text-foreground">Edit selected block</p>{isTransforming && <Loader2 className="size-3.5 animate-spin text-primary" />}</div>
@@ -171,7 +205,7 @@ export function Copywriter() {
         )}
 
         <div className="flex-1 overflow-auto px-3 py-4 sm:px-5 sm:py-6">
-          {error ? <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm leading-relaxed text-destructive">{error}</p> : output ? <CopyOutput markdown={output} selectedIndex={selectedIndex} onSelect={setSelectedIndex} /> : isLoading ? <div className="flex items-center gap-2 px-3 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />Crafting your copy…</div> : <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center"><div className="flex size-12 items-center justify-center rounded-xl bg-primary/10"><Languages className="size-5 text-primary" /></div><div className="flex max-w-sm flex-col gap-2"><p className="text-sm font-semibold">Ready when you are</p><p className="text-sm leading-relaxed text-muted-foreground">Set your brief, language, word count, and tone. Click any generated paragraph to refine it.</p></div></div>}
+          {error ? <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm leading-relaxed text-destructive">{error}</p> : output ? <CopyOutput markdown={output} selectedIndex={selectedIndex} onSelect={setSelectedIndex} /> : isLoading ? <div className="flex items-center gap-2 px-3 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />Writing your copy, then running clearance…</div> : <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center"><div className="flex size-12 items-center justify-center rounded-xl bg-primary/10"><Languages className="size-5 text-primary" /></div><div className="flex max-w-sm flex-col gap-2"><p className="text-sm font-semibold">Ready when you are</p><p className="text-sm leading-relaxed text-muted-foreground">Set your brief, language, word count, and tone. Click any generated paragraph to refine it.</p></div></div>}
         </div>
       </section>
     </div>
