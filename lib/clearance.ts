@@ -57,7 +57,7 @@ export type ClearanceReport = {
  * strip it deterministically rather than shipping it.
  */
 const PROTECTED_TERMS = [
-  "nike", "adidas", "puma", "reebok", "new balance", "under armour", "lululemon", "patagonia", "the north face", "supreme", "zara", "h&m", "uniqlo", "louis vuitton", "gucci", "prada", "chanel", "hermes", "hermès", "rolex", "cartier", "balenciaga", "versace", "dior",
+  "nike", "adidas", "reebok", "new balance", "under armour", "lululemon", "patagonia", "the north face", "zara", "h&m", "uniqlo", "louis vuitton", "gucci", "prada", "chanel", "hermes", "hermès", "rolex", "cartier", "balenciaga", "versace", "dior",
   "vans", "converse", "crocs", "birkenstock", "timberland", "dr martens", "skechers", "asics", "hoka", "on running", "spanx", "ray-ban", "oakley", "casio", "seiko", "tag heuer", "swarovski", "pandora jewellery", "tiffany & co",
   "snickers", "twix", "kit kat", "kitkat", "m&m's", "nutella", "doritos", "cheetos", "lay's", "milka", "toblerone", "pop-tarts", "cheerios", "evian", "perrier", "san pellegrino", "lindt", "ferrero rocher", "philadelphia cream cheese", "heinz", "hellmann's", "tabasco", "nutribullet", "vitamix",
   "coca-cola", "coca cola", "pepsi", "sprite", "fanta", "dr pepper", "mountain dew", "red bull", "monster energy", "gatorade", "nespresso", "starbucks", "mcdonald's", "mcdonalds", "burger king", "kfc", "taco bell", "wendy's", "domino's", "pizza hut", "chipotle", "dunkin", "nestle", "nestlé", "kellogg's", "oreo", "pringles", "haribo", "ben & jerry's", "heineken", "budweiser", "guinness", "jack daniel's", "absolut",
@@ -65,7 +65,7 @@ const PROTECTED_TERMS = [
   "amazon.com", "amazon prime", "alibaba", "aliexpress", "ebay", "etsy", "walmart", "costco", "ikea", "best buy", "home depot", "wayfair", "asos", "shein", "temu", "doordash", "grubhub", "instacart", "deliveroo", "uber", "uber eats", "lyft", "airbnb", "booking.com", "expedia", "tripadvisor", "kayak", "ryanair", "easyjet", "emirates", "delta air lines", "united airlines", "american airlines", "lufthansa",
   "toyota", "honda", "nissan", "mazda", "subaru", "hyundai", "kia", "ford", "chevrolet", "chevy", "cadillac", "jeep", "dodge", "ram trucks", "tesla", "bmw", "mercedes-benz", "mercedes", "audi", "volkswagen", "porsche", "ferrari", "lamborghini", "maserati", "bentley", "rolls-royce", "volvo", "peugeot", "renault", "fiat", "harley-davidson", "ducati", "yamaha", "kawasaki",
   "visa inc", "mastercard", "american express", "amex", "jpmorgan", "goldman sachs", "morgan stanley", "citibank", "hsbc", "barclays", "wells fargo", "bank of america", "chase bank", "santander", "allianz", "geico", "state farm", "progressive insurance", "aflac",
-  "pfizer", "moderna", "johnson & johnson", "advil", "tylenol", "viagra", "ozempic", "botox", "lipitor", "nurofen", "panadol", "listerine", "colgate", "crest", "oral-b", "gillette", "old spice", "nivea", "l'oreal", "l'oréal", "maybelline", "mac cosmetics", "sephora", "the ordinary", "cerave", "olaplex", "clinique", "estee lauder", "estée lauder", "pampers", "huggies", "tampax",
+  "pfizer", "moderna", "johnson & johnson", "advil", "tylenol", "viagra", "ozempic", "botox", "lipitor", "nurofen", "panadol", "listerine", "colgate", "crest", "oral-b", "gillette", "old spice", "nivea", "l'oreal", "l'oréal", "maybelline", "mac cosmetics", "sephora", "cerave", "olaplex", "clinique", "estee lauder", "estée lauder", "pampers", "huggies", "tampax",
   "velcro", "band-aid", "band aid", "jacuzzi", "xerox", "kleenex", "post-it", "sharpie", "styrofoam", "bubble wrap", "tupperware", "thermos", "hoover", "biro", "rollerblade", "jet ski", "sellotape", "scotch tape", "chapstick", "vaseline", "q-tips", "lego", "frisbee", "hula hoop", "play-doh", "nerf", "barbie", "hot wheels", "crock-pot", "instant pot", "keurig", "kitchenaid", "le creuset", "yeti cooler", "airfryer by philips", "wd-40", "duct tape by 3m", "3m",
   "star wars", "darth vader", "jedi", "millennium falcon", "star trek", "harry potter", "hogwarts", "dumbledore", "voldemort", "lord of the rings", "gandalf", "hobbit", "game of thrones", "jon snow", "khaleesi", "marvel", "avengers", "iron man", "spider-man", "spiderman", "captain america", "black panther", "thanos", "hulk", "thor", "batman", "superman", "wonder woman", "the joker", "dc comics", "disney", "mickey mouse", "pixar", "toy story", "buzz lightyear", "frozen elsa", "the lion king", "shrek", "minions", "despicable me", "pokemon", "pokémon", "pikachu", "nintendo mario", "super mario", "luigi", "zelda", "sonic the hedgehog", "minecraft", "fortnite", "roblox", "call of duty", "grand theft auto", "the sims", "candy crush", "angry birds", "among us", "league of legends", "world of warcraft", "the witcher", "assassin's creed", "final fantasy", "hello kitty", "sesame street", "spongebob", "the simpsons", "south park", "rick and morty", "peppa pig", "paw patrol", "bluey", "stranger things", "squid game", "breaking bad", "the office", "friends the sitcom", "sherlock holmes", "james bond", "007", "mission impossible", "jurassic park", "the matrix", "titanic the film", "barbie the movie", "oppenheimer",
   "olympics", "olympic games", "fifa", "world cup", "uefa", "champions league", "super bowl", "nba", "nfl", "mlb", "nhl", "wimbledon", "tour de france", "formula 1", "formula one", "nascar", "wwe", "ufc", "real madrid", "barcelona fc", "fc barcelona", "manchester united", "liverpool fc", "bayern munich", "juventus", "los angeles lakers", "new york yankees",
@@ -79,13 +79,22 @@ const PROTECTED_TERMS = [
  * as suspects so it can judge them in context.
  */
 const AMBIGUOUS_TERMS = [
-  "apple", "amazon", "orange", "shell", "subway", "target", "visa", "gap", "corona", "dove", "puma", "jaguar", "delta", "oracle", "mars", "monster", "sprite", "polo", "swatch", "energy star", "bluetooth", "wi-fi", "wifi", "usb-c", "airplay", "alexa", "siri", "cortana", "everlast", "kickstarter", "patreon", "substack", "medium", "vimeo", "quora", "yelp", "zillow", "trello", "asana", "airtable", "webflow", "wix", "squarespace", "wordpress", "mailchimp", "klaviyo", "twilio", "vercel", "github", "gitlab", "docker", "kubernetes",
+  "apple", "amazon", "orange", "shell", "subway", "target", "visa", "gap", "corona", "dove", "puma", "jaguar", "delta", "oracle", "mars", "monster", "sprite", "polo", "swatch", "supreme", "the ordinary", "energy star", "bluetooth", "wi-fi", "wifi", "usb-c", "airplay", "alexa", "siri", "cortana", "everlast", "kickstarter", "patreon", "substack", "medium", "vimeo", "quora", "yelp", "zillow", "trello", "asana", "airtable", "webflow", "wix", "squarespace", "wordpress", "mailchimp", "klaviyo", "twilio", "vercel", "github", "gitlab", "docker", "kubernetes",
 ]
 
 const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
 function matchTerms(text: string, terms: string[]) {
   return terms.filter((term) => new RegExp(`(^|[^\\p{L}\\p{N}])${escape(term)}([^\\p{L}\\p{N}]|$)`, "iu").test(text))
+}
+
+/**
+ * Swaps every whole-word occurrence of `term` for `replacement`, leaving the
+ * surrounding characters untouched so punctuation and Markdown survive intact.
+ */
+function replaceTerm(text: string, term: string, replacement: string) {
+  const pattern = new RegExp(`(^|[^\\p{L}\\p{N}])(${escape(term)})([^\\p{L}\\p{N}]|$)`, "giu")
+  return text.replace(pattern, (_match, before, _hit, after) => `${before}${replacement}${after}`)
 }
 
 /** Deterministic invented name, stable for a given source term. */
@@ -131,8 +140,9 @@ const AUDITOR_SYSTEM = [
   "Generic descriptive nouns used generically are fine ('running shoes', 'streaming service', 'search engine').",
   "",
   "For every finding, invent a replacement that is genuinely new, is not a phonetic or spelling variant of the flagged term, carries the same category and register, and does not itself match any real company, product, or work you know of.",
-  "Apply one replacement per flagged term, consistently at every occurrence. Return the complete copy in clearedText, preserving the Markdown structure, language, length, and meaning. Change nothing else.",
-  "Add no notes, disclaimers, or commentary to clearedText.",
+  "Report `term` as the exact substring that appears in the copy, copied character for character, with no surrounding words and no added punctuation. The substitution is applied mechanically, so a term that does not appear verbatim cannot be removed.",
+  "List one finding per distinct protected term, not one per occurrence.",
+  "Return findings only. Do not rewrite, reformat, or comment on the copy.",
 ].join("\n")
 
 export class ClearanceUnavailableError extends Error {
@@ -146,7 +156,7 @@ export class ClearanceUnavailableError extends Error {
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-async function auditOnce(text: string, suspects: string[], model: string) {
+async function auditOnce(text: string, suspects: string[], model: string, cleared: string[]) {
   const { object } = await generateObject({
     model,
     schema: auditSchema,
@@ -155,6 +165,9 @@ async function auditOnce(text: string, suspects: string[], model: string) {
     prompt: [
       suspects.length
         ? `An automated screen matched these strings against a protected-name list. Judge each one in context: replace it when it names or evokes a real entity, product, or work. Leave it exactly as written when it is an ordinary word, adjective, or generic noun in this sentence.\n${suspects.map((item) => `- ${item}`).join("\n")}\n`
+        : "",
+      cleared.length
+        ? `These names were invented by a previous clearance pass and are already cleared. Do NOT flag or rename them:\n${cleared.map((item) => `- ${item}`).join("\n")}\n`
         : "",
       "COPY TO CLEAR:",
       text,
@@ -166,16 +179,21 @@ async function auditOnce(text: string, suspects: string[], model: string) {
 }
 
 /** Clearance is mandatory, so a transient failure is retried, never skipped. */
-async function auditWithRetries(text: string, suspects: string[]) {
+async function auditWithRetries(text: string, suspects: string[], cleared: string[]) {
+  // Rate limits are account-wide, so swapping models is not enough on its own:
+  // each attempt also backs off to give the quota room to recover.
+  const backoff = [0, 1500, 5000, 10000, 15000]
   let lastError: unknown
-  for (const [index, model] of AUDIT_MODELS.entries()) {
-    if (index) await wait(1500)
+
+  for (const [attempt, delay] of backoff.entries()) {
+    if (delay) await wait(delay)
     try {
-      return await auditOnce(text, suspects, model)
+      return await auditOnce(text, suspects, AUDIT_MODELS[attempt % AUDIT_MODELS.length], cleared)
     } catch (error) {
       lastError = error
     }
   }
+
   throw lastError instanceof Error ? lastError : new Error("Clearance audit failed.")
 }
 
@@ -196,9 +214,11 @@ export async function clearCopy(text: string): Promise<{ text: string; report: C
 
     if (pass > 0 && suspects.length === 0) break
 
+    const cleared = substitutions.map((item) => item.replacement)
+
     let audit: Awaited<ReturnType<typeof auditOnce>>
     try {
-      audit = await auditWithRetries(current, suspects)
+      audit = await auditWithRetries(current, suspects, cleared)
     } catch {
       // Never release copy that has not been reviewed at least once. Once a
       // pass has succeeded, the deterministic sweep below is still applied.
@@ -208,21 +228,33 @@ export async function clearCopy(text: string): Promise<{ text: string; report: C
     }
     passes += 1
 
-    if (audit.clearedText.trim()) current = audit.clearedText.trim()
+    let applied = 0
     for (const finding of audit.findings) {
-      if (!finding.term.trim() || !finding.replacement.trim()) continue
-      if (substitutions.some((item) => item.original.toLowerCase() === finding.term.toLowerCase())) continue
-      substitutions.push({ original: finding.term.trim(), replacement: finding.replacement.trim(), kind: finding.kind })
+      const term = finding.term.trim()
+      const replacement = finding.replacement.trim() || coinName(term)
+      if (!term) continue
+
+      // A name this process already invented is cleared; renaming it again
+      // would churn indefinitely without improving compliance.
+      if (cleared.some((name) => name.toLowerCase() === term.toLowerCase())) continue
+
+      const next = replaceTerm(current, term, replacement)
+      if (next === current) continue
+
+      current = next
+      applied += 1
+      if (!substitutions.some((item) => item.original.toLowerCase() === term.toLowerCase())) {
+        substitutions.push({ original: term, replacement, kind: finding.kind })
+      }
     }
 
-    if (audit.findings.length === 0 && matchTerms(current, PROTECTED_TERMS).length === 0) break
+    if (applied === 0 && matchTerms(current, PROTECTED_TERMS).length === 0) break
   }
 
   // Fail-safe: nothing on the protected list ships, model cooperation or not.
   for (const term of matchTerms(current, PROTECTED_TERMS)) {
     const replacement = coinName(term)
-    const pattern = new RegExp(`(^|[^\\p{L}\\p{N}])(${escape(term)})([^\\p{L}\\p{N}]|$)`, "giu")
-    current = current.replace(pattern, (_match, before, _hit, after) => `${before}${replacement}${after}`)
+    current = replaceTerm(current, term, replacement)
     status = "enforced"
     if (!substitutions.some((item) => item.original.toLowerCase() === term.toLowerCase())) {
       substitutions.push({ original: term, replacement, kind: "trademark" })
