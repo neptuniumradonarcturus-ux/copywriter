@@ -34,24 +34,8 @@ function wordPattern(term: string, flags = "giu") {
   return new RegExp(`(^|[^\\p{L}\\p{N}])(${escape(term)})(?=[^\\p{L}\\p{N}]|$)`, flags)
 }
 
-function replacePhrase(text: string, phrase: string, replacement: string) {
-  return text.replace(wordPattern(phrase), (_match, before: string, hit: string) => {
-    const cased = /^\p{Lu}/u.test(hit) && replacement ? replacement.charAt(0).toUpperCase() + replacement.slice(1) : replacement
-    return `${before}${cased}`
-  })
-}
-
-function tidy(text: string) {
-  return text
-    .split("\n")
-    .map((line) =>
-      line
-        .replace(/(\S)[ \t]{2,}/g, "$1 ")
-        .replace(/[ \t]+([,.!?;:])/g, "$1")
-        .replace(/,\s*,/g, ",")
-        .trimEnd(),
-    )
-    .join("\n")
+function findProfanity(text: string) {
+  return PROFANITY.filter((word) => wordPattern(word, "iu").test(text))
 }
 
 const findingSchema = z.object({
@@ -59,9 +43,6 @@ const findingSchema = z.object({
   category: z
     .enum(["slur", "profanity", "sexist", "homophobic", "transphobic", "racist", "ableist", "stereotype", "sexual", "other"])
     .describe("Why the phrase is a problem."),
-  replacement: z
-    .string()
-    .describe("A respectful replacement that keeps the sentence grammatical and on-message. Use an empty string only if the phrase can simply be deleted."),
 })
 
 const reviewSchema = z.object({ findings: z.array(findingSchema) })
@@ -79,7 +60,7 @@ const REVIEWER_SYSTEM = [
   "- Any stereotype or joke at the expense of a group",
   "",
   "Ordinary words used in their ordinary meaning are fine. Do not flag neutral, respectful mentions of identities or groups.",
-  "For each finding, report `phrase` as the exact substring from the copy with no added punctuation, and give a respectful replacement that keeps the sentence grammatical and the copy persuasive.",
+  "For each finding, report `phrase` as the exact substring from the copy with no added punctuation.",
   "List one finding per distinct phrase. Return findings only. If nothing is offensive, return an empty list.",
 ].join("\n")
 
@@ -112,46 +93,33 @@ async function reviewWithRetries(text: string) {
   return null
 }
 
-export type SafetyReport = { passes: number; replacements: number }
+export class OffensiveDraftError extends Error {
+  constructor() {
+    super("Every draft for this brief was rejected for offensive language, so no copy was released. Try rewording the brief.")
+    this.name = "OffensiveDraftError"
+  }
+}
 
 /**
- * Reviews copy for offensive language and rewrites any flagged phrases.
- * Fails closed: copy that has never been reviewed is not released.
+ * Inspects copy for offensive language without changing it. An empty result
+ * means the copy is clean. Drafts that fail are discarded and rewritten from
+ * scratch by the caller, so words are never deleted out of a sentence.
+ * Fails closed: if the review cannot run, the copy is not released.
  */
-export async function enforceRespectfulLanguage(text: string): Promise<{ text: string; report: SafetyReport }> {
-  let current = text
-  let passes = 0
-  let replacements = 0
+export async function findOffensiveLanguage(text: string): Promise<string[]> {
+  const profanity = findProfanity(text)
+  if (profanity.length) return profanity
 
-  for (let pass = 0; pass < 2; pass += 1) {
-    const findings = await reviewWithRetries(current)
-    if (!findings) {
-      if (passes === 0) throw new SafetyReviewUnavailableError()
-      break
-    }
-    passes += 1
+  const findings = await reviewWithRetries(text)
+  if (!findings) throw new SafetyReviewUnavailableError()
+  return [...new Set(findings.map((finding) => finding.phrase.trim()).filter(Boolean))]
+}
 
-    let applied = 0
-    for (const finding of findings) {
-      const phrase = finding.phrase.trim()
-      if (!phrase) continue
-      const next = replacePhrase(current, phrase, finding.replacement.trim())
-      if (next !== current) {
-        current = next
-        applied += 1
-      }
-    }
-    replacements += applied
-    if (applied === 0) break
-  }
-
-  for (const word of PROFANITY) {
-    const next = replacePhrase(current, word, "")
-    if (next !== current) {
-      current = next
-      replacements += 1
-    }
-  }
-
-  return { text: tidy(current), report: { passes, replacements } }
+/** Extra instruction for a rewrite after a draft was rejected. */
+export function rejectionFeedback(phrases: string[]) {
+  return [
+    "IMPORTANT: Your previous draft was rejected and discarded because it contained offensive language.",
+    `Do not use these words or anything like them: ${phrases.map((phrase) => `"${phrase}"`).join(", ")}.`,
+    "Write a completely fresh draft that follows the RESPECTFUL LANGUAGE RULES from the very first word.",
+  ].join("\n")
 }
