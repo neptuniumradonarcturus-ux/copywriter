@@ -1,5 +1,6 @@
 import { generateText } from "ai"
 import { ClearanceUnavailableError, WRITER_MODEL, clearCopy, clearanceRules, encodeReport } from "@/lib/clearance"
+import { plainStyleRules, sanitizeCopy } from "@/lib/sanitize"
 
 export const maxDuration = 300
 
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
       `Write exclusively in ${outputLanguage}.`,
       "Preserve its Markdown block type and approximate length. Return only the replacement block, with no commentary.",
       "Any invented names already used in the surrounding copy are established: reuse them verbatim and do not coin new substitutes for terms that already have one.",
+      plainStyleRules,
       clearanceRules,
     ].join("\n")
     prompt = `FULL COPY FOR CONTEXT:\n${context}\n\nBLOCK TO REWRITE:\n${block}`
@@ -66,8 +68,9 @@ export async function POST(request: Request) {
       `Write the finished copy exclusively in fluent, native-quality ${outputLanguage}.`,
       `Aim for approximately ${words} words (within 10%).`,
       `Use a ${tone} tone of voice.`,
-      "Format publish-ready Markdown with a compelling headline, useful subheadings, short paragraphs, and lists only when they improve readability.",
+      "Structure the copy with a compelling headline, a few useful subheadings, short paragraphs, and lists only when they genuinely improve readability.",
       "Output only the finished copy. Do not include notes, word counts, explanations, or legal commentary.",
+      plainStyleRules,
       clearanceRules,
     ].join("\n")
     prompt = brief
@@ -75,13 +78,13 @@ export async function POST(request: Request) {
 
   try {
     const draft = await generateText({ model: WRITER_MODEL, system, prompt, temperature })
-    const written = draft.text.trim()
+    const written = sanitizeCopy(draft.text)
     if (!written) return new Response("The model returned no copy. Please try again.", { status: 502 })
 
     // Hard gate: copy is only released after clearance, never before.
     const { text, report } = await clearCopy(written)
 
-    return new Response(text, {
+    return new Response(sanitizeCopy(text), {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
         "Cache-Control": "no-store",
