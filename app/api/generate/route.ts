@@ -1,5 +1,6 @@
 import { generateText } from "ai"
 import { ClearanceUnavailableError, WRITER_MODEL, clearCopy, clearanceRules, encodeReport } from "@/lib/clearance"
+import { SafetyReviewUnavailableError, contentSafetyRules, enforceRespectfulLanguage } from "@/lib/content-safety"
 import { plainStyleRules, sanitizeCopy } from "@/lib/sanitize"
 
 export const maxDuration = 300
@@ -51,6 +52,7 @@ export async function POST(request: Request) {
       "Preserve its Markdown block type and approximate length. Return only the replacement block, with no commentary.",
       "Any invented names already used in the surrounding copy are established: reuse them verbatim and do not coin new substitutes for terms that already have one.",
       plainStyleRules,
+      contentSafetyRules,
       clearanceRules,
     ].join("\n")
     prompt = `FULL COPY FOR CONTEXT:\n${context}\n\nBLOCK TO REWRITE:\n${block}`
@@ -71,6 +73,7 @@ export async function POST(request: Request) {
       "Structure the copy with a compelling headline, a few useful subheadings, short paragraphs, and lists only when they genuinely improve readability.",
       "Output only the finished copy. Do not include notes, word counts, explanations, or legal commentary.",
       plainStyleRules,
+      contentSafetyRules,
       clearanceRules,
     ].join("\n")
     prompt = brief
@@ -83,8 +86,9 @@ export async function POST(request: Request) {
 
     // Hard gate: copy is only released after clearance, never before.
     const { text, report } = await clearCopy(written)
+    const { text: respectful } = await enforceRespectfulLanguage(text)
 
-    return new Response(sanitizeCopy(text), {
+    return new Response(sanitizeCopy(respectful), {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
         "Cache-Control": "no-store",
@@ -92,7 +96,7 @@ export async function POST(request: Request) {
       },
     })
   } catch (error) {
-    if (error instanceof ClearanceUnavailableError) {
+    if (error instanceof ClearanceUnavailableError || error instanceof SafetyReviewUnavailableError) {
       return new Response(error.message, { status: 503 })
     }
     return new Response(friendlyError(error), { status: 502 })

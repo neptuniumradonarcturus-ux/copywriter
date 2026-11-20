@@ -8,7 +8,7 @@ export const WRITER_MODEL = "openai/gpt-4.1"
  * Clearance runs on its own models, tried in order, so a rate limit on the
  * writer's model can never cause the review to be skipped.
  */
-const AUDIT_MODELS = ["openai/gpt-4.1-mini", "google/gemini-3-flash", "openai/gpt-4.1"]
+export const AUDIT_MODELS = ["openai/gpt-4.1-mini", "google/gemini-3-flash", "openai/gpt-4.1"]
 const MAX_PASSES = 3
 
 /**
