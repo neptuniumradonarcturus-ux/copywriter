@@ -5,6 +5,7 @@ import { useRef, useState } from "react"
 import { Check, Copy, Languages, Loader2, RotateCcw, ShieldCheck, Sparkles, WandSparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { ClearanceReport } from "@/lib/clearance"
+import { toPlainText } from "@/lib/sanitize"
 import { ClearancePanel } from "./clearance-panel"
 import { CopyOutput, splitMarkdownBlocks } from "./copy-output"
 import { LanguagePicker } from "./language-picker"
@@ -117,7 +118,7 @@ export function Copywriter() {
 
   function handleCopy() {
     if (!output) return
-    navigator.clipboard.writeText(output)
+    navigator.clipboard.writeText(toPlainText(output))
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }

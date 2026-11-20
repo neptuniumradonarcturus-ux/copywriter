@@ -1,7 +1,17 @@
 import { generateText } from "ai"
 import { ClearanceUnavailableError, WRITER_MODEL, clearCopy, clearanceRules, encodeReport } from "@/lib/clearance"
+import {
+  OffensiveDraftError,
+  SafetyReviewUnavailableError,
+  contentSafetyRules,
+  findOffensiveLanguage,
+  rejectionFeedback,
+} from "@/lib/content-safety"
+import { plainStyleRules, sanitizeCopy } from "@/lib/sanitize"
 
 export const maxDuration = 300
+
+const MAX_DRAFTS = 3
 
 function friendlyError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error)
@@ -49,6 +59,8 @@ export async function POST(request: Request) {
       `Write exclusively in ${outputLanguage}.`,
       "Preserve its Markdown block type and approximate length. Return only the replacement block, with no commentary.",
       "Any invented names already used in the surrounding copy are established: reuse them verbatim and do not coin new substitutes for terms that already have one.",
+      plainStyleRules,
+      contentSafetyRules,
       clearanceRules,
     ].join("\n")
     prompt = `FULL COPY FOR CONTEXT:\n${context}\n\nBLOCK TO REWRITE:\n${block}`
@@ -66,31 +78,60 @@ export async function POST(request: Request) {
       `Write the finished copy exclusively in fluent, native-quality ${outputLanguage}.`,
       `Aim for approximately ${words} words (within 10%).`,
       `Use a ${tone} tone of voice.`,
-      "Format publish-ready Markdown with a compelling headline, useful subheadings, short paragraphs, and lists only when they improve readability.",
+      "Structure the copy with a compelling headline, a few useful subheadings, short paragraphs, and lists only when they genuinely improve readability.",
       "Output only the finished copy. Do not include notes, word counts, explanations, or legal commentary.",
+      plainStyleRules,
+      contentSafetyRules,
       clearanceRules,
     ].join("\n")
     prompt = brief
   }
 
   try {
-    const draft = await generateText({ model: WRITER_MODEL, system, prompt, temperature })
-    const written = draft.text.trim()
-    if (!written) return new Response("The model returned no copy. Please try again.", { status: 502 })
+    // Offensive drafts are discarded and rewritten from scratch, never patched.
+    let feedback = ""
+    for (let attempt = 0; attempt < MAX_DRAFTS; attempt += 1) {
+      const draft = await generateText({
+        model: WRITER_MODEL,
+        system: feedback ? `${system}\n\n${feedback}` : system,
+        prompt,
+        temperature,
+      })
+      const written = sanitizeCopy(draft.text)
+      if (!written) continue
 
-    // Hard gate: copy is only released after clearance, never before.
-    const { text, report } = await clearCopy(written)
+      const rejected = await findOffensiveLanguage(written)
+      if (rejected.length) {
+        feedback = rejectionFeedback(rejected)
+        continue
+      }
 
-    return new Response(text, {
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "no-store",
-        "X-Clearance": encodeReport(report),
-      },
-    })
+      // Hard gate: copy is only released after clearance, never before.
+      const { text, report } = await clearCopy(written)
+      const final = sanitizeCopy(text)
+      const rejectedAfterClearance = await findOffensiveLanguage(final)
+      if (rejectedAfterClearance.length) {
+        feedback = rejectionFeedback(rejectedAfterClearance)
+        continue
+      }
+
+      return new Response(final, {
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Cache-Control": "no-store",
+          "X-Clearance": encodeReport(report),
+        },
+      })
+    }
+
+    if (feedback) throw new OffensiveDraftError()
+    return new Response("The model returned no copy. Please try again.", { status: 502 })
   } catch (error) {
-    if (error instanceof ClearanceUnavailableError) {
+    if (error instanceof ClearanceUnavailableError || error instanceof SafetyReviewUnavailableError) {
       return new Response(error.message, { status: 503 })
+    }
+    if (error instanceof OffensiveDraftError) {
+      return new Response(error.message, { status: 422 })
     }
     return new Response(friendlyError(error), { status: 502 })
   }
